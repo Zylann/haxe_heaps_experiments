@@ -95,6 +95,10 @@ class Mesher {
 			}
 		}
 
+		if (vertices.length == 0) {
+			return null;
+		}
+
 		// Generate index buffer, assuming we only use quads
 		// TODO Optimization: could we re-use the same index buffer?
 		// Doing this would need the ability to specify a custom triangle count in meshes,

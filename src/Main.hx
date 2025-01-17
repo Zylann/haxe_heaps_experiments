@@ -105,6 +105,11 @@ class Main extends hxd.App {
 			ChunkGenerator.generateChunkVoxels(meshingVoxelBuffer, originX, originY, originZ);
 
 			var meshPrim = Mesher.build(meshingVoxelBuffer);
+			if (meshPrim == null) {
+				// Empty
+				continue;
+			}
+
 			var mesh = new Mesh(meshPrim, chunkMaterial, s3d);
 			mesh.setPosition(originX, originY, originZ);
 

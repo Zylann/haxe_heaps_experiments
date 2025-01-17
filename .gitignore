@@ -1,0 +1,5 @@
+# HashLink binary executables
+*.hl
+
+# Temporary/cache files
+.tmp/

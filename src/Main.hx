@@ -36,7 +36,7 @@ class Main extends hxd.App {
 
 		meshingVoxelBuffer = VoxelBuffer.makeCubic(CHUNK_SIZE + 2 * Mesher.PAD);
 
-		var cr = 12;
+		var cr = 8;
 		for (cx in -cr...cr) {
 			for (cy in -cr...cr) {
 				for (cz in -2...4) {

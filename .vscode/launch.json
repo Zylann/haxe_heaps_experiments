@@ -6,10 +6,14 @@
             "type": "hl",
             "request": "launch",
             "cwd": "${workspaceFolder}",
-            "preLaunchTask": {
-                "type": "haxe",
-                "args": "active configuration"
-            }
+            // "preLaunchTask": "Build for HashLink"
+
+            // TODO That was the example from Heaps.IO, but it longer works after changing PC.
+            // https://github.com/vshaxe/vshaxe/issues/658
+            // "preLaunchTask": {
+            //     "type": "haxe",
+            //     "args": "active configuration"
+            // }
         }
         // {
         //     "name": "Launch Chrome against localhost",

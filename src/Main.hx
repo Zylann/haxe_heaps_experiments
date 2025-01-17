@@ -2,23 +2,19 @@ import h3d.mat.Material;
 import hxd.Timer;
 import h3d.scene.fwd.DirLight;
 import h3d.scene.Mesh;
-import hxd.res.DefaultFont;
 
 class Main extends hxd.App {
-	static inline var DEBUG_FPS_UPDATE_INTERVAL = 0.25;
 	static inline var CHUNK_SIZE = 32;
 
-	var debugText:h2d.Text;
 	var time:Float;
-	var debugTimeBeforeFPSUpdate = 0.0;
 	var pendingChunks:Array<Vector3i> = [];
 	var chunkMaterial: Material;
 	var meshingVoxelBuffer: VoxelBuffer;
+	var debugDisplay: DebugDisplay;
 
 	override function init() {
+		debugDisplay = new DebugDisplay(s2d);
 		// var prim = new h3d.prim.MeshPrimitive
-		debugText = new h2d.Text(DefaultFont.get(), s2d);
-		debugText.text = "Hello World!";
 
 		var prim = new h3d.prim.Cube();
 		prim.translate(-0.5, -0.5, -0.5);
@@ -82,13 +78,10 @@ class Main extends hxd.App {
 		var camera = s3d.camera;
 		camera.pos.set(camDistance * Math.cos(time), camDistance * Math.sin(time), 50.0);
 
-		debugTimeBeforeFPSUpdate -= dt;
-		if (debugTimeBeforeFPSUpdate <= 0.0) {
-			debugTimeBeforeFPSUpdate = DEBUG_FPS_UPDATE_INTERVAL;
-			debugText.text = 'FPS: ${Timer.fps()}\nLoading chunks: ${pendingChunks.length}';
-		}
 
 		updateChunkLoading();
+
+		debugDisplay.update(dt, pendingChunks.length);
 	}
 
 	function updateChunkLoading() {

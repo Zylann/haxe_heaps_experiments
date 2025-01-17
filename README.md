@@ -14,8 +14,9 @@ So I installed Chrome, which worked.
 
 ### HashLink
 
-Compiling failed because of usages of `format.hl.Native`.
-Remove the format library that Haxe came with, and install the latest version from Git.
+When using latest Heaps (from Git), compiling fails when targetting HashLink because of usages of `format.hl.Native`.
+Heaps.IO automatically installs the `format` library, but isn't targetting a recent enough version.
+Remove it and install the latest:
 ```
 haxelib remove format
 haxelib git format https://github.com/HaxeFoundation/format master
@@ -44,4 +45,4 @@ In Haxe, arrays are not bound checked. When reading, they either return null, or
 #### Value types
 
 Haxe seems to only have classes for structured data, which are heap-allocated. And like in Java or Javascript, that means all abstraction we can usually build with value-type vector math trigger allocations and garbage collection (in particular code running every frame, mesh generation...).
-Apparently using `inline` can help. Haven't figured yet how it serves that case.
+Will need to investigate how people deal with this. 

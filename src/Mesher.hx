@@ -1,4 +1,5 @@
 import hxd.IndexBuffer;
+import hxd.Math;
 
 class Mesher {
 	public static inline var PAD = 1;
@@ -71,13 +72,13 @@ class Mesher {
 
 					if (hasSide) {
 						if (boundsInitialized) {
-							minX = mini(x, minX);
-							minY = mini(y, minY);
-							minZ = mini(z, minZ);
+							minX = Math.imin(x, minX);
+							minY = Math.imin(y, minY);
+							minZ = Math.imin(z, minZ);
 
-							maxX = maxi(x, minX);
-							maxY = maxi(y, minY);
-							maxZ = maxi(z, minZ);
+							maxX = Math.imax(x, minX);
+							maxY = Math.imax(y, minY);
+							maxZ = Math.imax(z, minZ);
 						} else {
 							minX = x;
 							minY = y;
@@ -94,7 +95,8 @@ class Mesher {
 			}
 		}
 
-		// TODO Optimization: could we re-use the same index buffer if we really use only quads?
+		// Generate index buffer, assuming we only use quads
+		// TODO Optimization: could we re-use the same index buffer?
 		// Doing this would need the ability to specify a custom triangle count in meshes,
 		// instead of leaving it to the actual length of the index buffer
 		var indices = new IndexBuffer();
@@ -120,15 +122,5 @@ class Mesher {
 
 		var prim = new VoxelMeshPrimitive(vertices, indices, bounds);
 		return prim;
-	}
-
-	// TODO Min for integers? Math only has floats
-	static inline function mini(a:Int, b:Int):Int {
-		return a < b ? a : b;
-	}
-
-	// TODO Max for integers? Math only has floats
-	static inline function maxi(a:Int, b:Int):Int {
-		return a > b ? a : b;
 	}
 }

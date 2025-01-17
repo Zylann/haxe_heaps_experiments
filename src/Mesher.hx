@@ -4,10 +4,11 @@ class Mesher {
 	public static inline var PAD = 1;
 	public static inline var ATLAS_TILES_PER_ROW = 4;
 
+	static inline var AIR = 0;
+
 	// Takes a padded 3D buffer of voxel data and turns it into a cubic voxel mesh.
 	public static function build(voxels:VoxelBuffer):h3d.prim.MeshPrimitive {
 		var vertices = new hxd.FloatBuffer();
-		final PAD = 1;
 		var quadCount = 0;
 
 		var minX = 0;
@@ -25,7 +26,7 @@ class Mesher {
 				for (x in PAD...voxels.sizeX - PAD) {
 					// TODO Optimize: could be unchecked
 					final v = voxels.getVoxel(x, y, z);
-					if (v == 0) {
+					if (v == AIR) {
 						continue;
 					}
 
@@ -39,7 +40,7 @@ class Mesher {
 
 						// TODO Optimize: could be unchecked
 						final nv = voxels.getVoxel(x + normalX, y + normalY, z + normalZ);
-						if (nv != 0) {
+						if (nv != AIR) {
 							continue;
 						}
 

@@ -1,19 +1,19 @@
 import h3d.mat.Material;
-import hxd.Timer;
 import h3d.scene.fwd.DirLight;
 import h3d.scene.Mesh;
 
 class Main extends hxd.App {
 	static inline var CHUNK_SIZE = 32;
 
-	var time:Float;
 	var pendingChunks:Array<Vector3i> = [];
 	var chunkMaterial: Material;
 	var meshingVoxelBuffer: VoxelBuffer;
 	var debugDisplay: DebugDisplay;
+	var playerCamera: PlayerCamera;
 
 	override function init() {
 		debugDisplay = new DebugDisplay(s2d);
+		playerCamera = new PlayerCamera(s3d);
 		// var prim = new h3d.prim.MeshPrimitive
 
 		var prim = new h3d.prim.Cube();
@@ -67,17 +67,8 @@ class Main extends hxd.App {
 
 	override function update(dt:Float) {
 		super.update(dt);
-		time += dt * 0.2;
 
-		//    Z
-		//    |
-		//    o---X
-		//   /
-		//  Y
-		var camDistance = 120.0;
-		var camera = s3d.camera;
-		camera.pos.set(camDistance * Math.cos(time), camDistance * Math.sin(time), 50.0);
-
+		playerCamera.update(dt);
 
 		updateChunkLoading();
 

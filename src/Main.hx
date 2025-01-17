@@ -1,3 +1,4 @@
+import h3d.mat.Material;
 import hxd.Timer;
 import h3d.scene.fwd.DirLight;
 import h3d.scene.Mesh;
@@ -5,10 +6,14 @@ import hxd.res.DefaultFont;
 
 class Main extends hxd.App {
 	static inline var DEBUG_FPS_UPDATE_INTERVAL = 0.25;
+	static inline var CHUNK_SIZE = 16;
 
 	var debugText:h2d.Text;
 	var time:Float;
 	var debugTimeBeforeFPSUpdate = 0.0;
+	var pendingChunks:Array<Vector3i> = [];
+	var chunkMaterial: Material;
+	var meshingVoxelBuffer: VoxelBuffer;
 
 	override function init() {
 		// var prim = new h3d.prim.MeshPrimitive
@@ -30,30 +35,38 @@ class Main extends hxd.App {
 		hxd.Res.initEmbed();
 
 		var atlas = hxd.Res.atlas.toTexture();
-		var voxelMaterial = h3d.mat.Material.create(atlas);
-		voxelMaterial.texture.filter = h3d.mat.Data.Filter.Nearest;
+		chunkMaterial = h3d.mat.Material.create(atlas);
+		chunkMaterial.texture.filter = h3d.mat.Data.Filter.Nearest;
 
-		var chunkSize = 16;
-		var voxels = VoxelBuffer.makeCubic(chunkSize + 2 * Mesher.PAD);
+		meshingVoxelBuffer = VoxelBuffer.makeCubic(CHUNK_SIZE + 2 * Mesher.PAD);
 
 		var cr = 16;
 		for (cx in -cr...cr) {
 			for (cy in -cr...cr) {
 				for (cz in -2...4) {
-					var originX = cx * chunkSize;
-					var originY = cy * chunkSize;
-					var originZ = cz * chunkSize;
-					ChunkGenerator.generateChunkVoxels(voxels, originX - Mesher.PAD, originY - Mesher.PAD, originZ - Mesher.PAD);
-					var voxelPrim = Mesher.build(voxels);
-					var voxelMesh = new Mesh(voxelPrim, s3d);
-					voxelMesh.setPosition(originX, originY, originZ);
-					voxelMesh.material = voxelMaterial;
+					pendingChunks.push(new Vector3i(cx, cy, cz));
 				}
 			}
 		}
 
+		pendingChunks.sort(comparePendingChunks);
+
 		var camera = s3d.camera;
 		camera.fovY = 80;
+	}
+
+	function comparePendingChunks(a:Vector3i, b:Vector3i):Int {
+		// TODO Take this from camera location and don't allocate
+		var interest = new Vector3i(0, 0, 0);
+		var da = a.distanceToSq(interest);
+		var db = b.distanceToSq(interest);
+		// Closest comes last
+		if (da < db) {
+			return 1;
+		} else if (da > db) {
+			return -1;
+		}
+		return 0;
 	}
 
 	override function update(dt:Float) {
@@ -72,7 +85,33 @@ class Main extends hxd.App {
 		debugTimeBeforeFPSUpdate -= dt;
 		if (debugTimeBeforeFPSUpdate <= 0.0) {
 			debugTimeBeforeFPSUpdate = DEBUG_FPS_UPDATE_INTERVAL;
-			debugText.text = 'FPS: ${Timer.fps()}';
+			debugText.text = 'FPS: ${Timer.fps()}\nLoading chunks: ${pendingChunks.length}';
+		}
+
+		updateChunkLoading();
+	}
+
+	function updateChunkLoading() {
+		var timeBeforeS = haxe.Timer.stamp();
+		final budgetS = 0.25 / 60.0;
+		
+		while (pendingChunks.length > 0) {
+			var cpos : Vector3i = pendingChunks.pop();
+		
+			var originX = cpos.x * CHUNK_SIZE;
+			var originY = cpos.y * CHUNK_SIZE;
+			var originZ = cpos.z * CHUNK_SIZE;
+
+			ChunkGenerator.generateChunkVoxels(meshingVoxelBuffer, originX, originY, originZ);
+
+			var meshPrim = Mesher.build(meshingVoxelBuffer);
+			var mesh = new Mesh(meshPrim, chunkMaterial, s3d);
+			mesh.setPosition(originX, originY, originZ);
+
+			var nowS = haxe.Timer.stamp();
+			if (nowS - timeBeforeS >= budgetS) {
+				break;
+			}
 		}
 	}
 

@@ -6,7 +6,7 @@ import hxd.res.DefaultFont;
 
 class Main extends hxd.App {
 	static inline var DEBUG_FPS_UPDATE_INTERVAL = 0.25;
-	static inline var CHUNK_SIZE = 16;
+	static inline var CHUNK_SIZE = 32;
 
 	var debugText:h2d.Text;
 	var time:Float;
@@ -40,7 +40,7 @@ class Main extends hxd.App {
 
 		meshingVoxelBuffer = VoxelBuffer.makeCubic(CHUNK_SIZE + 2 * Mesher.PAD);
 
-		var cr = 16;
+		var cr = 12;
 		for (cx in -cr...cr) {
 			for (cy in -cr...cr) {
 				for (cz in -2...4) {

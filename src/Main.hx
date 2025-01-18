@@ -78,7 +78,7 @@ class Main extends hxd.App {
 	function updateChunkLoading() {
 		var timeBeforeS = haxe.Timer.stamp();
 		final budgetS = 0.25 / 60.0;
-		
+
 		while (pendingChunks.length > 0) {
 			var cpos : Vector3i = pendingChunks.pop();
 		
@@ -89,13 +89,12 @@ class Main extends hxd.App {
 			ChunkGenerator.generateChunkVoxels(meshingVoxelBuffer, originX, originY, originZ);
 
 			var meshPrim = Mesher.build(meshingVoxelBuffer);
-			if (meshPrim == null) {
-				// Empty
-				continue;
+			
+			// Empty?
+			if (meshPrim != null) {
+				var mesh = new Mesh(meshPrim, chunkMaterial, s3d);
+				mesh.setPosition(originX, originY, originZ);
 			}
-
-			var mesh = new Mesh(meshPrim, chunkMaterial, s3d);
-			mesh.setPosition(originX, originY, originZ);
 
 			var nowS = haxe.Timer.stamp();
 			if (nowS - timeBeforeS >= budgetS) {

@@ -65,10 +65,10 @@ class Cube {
 
 	public static final sideUVs:ReadOnlyArray<ReadOnlyArray<Float>> = [
 		// @formatter:off
-        [0.0, 0.0],
-        [1.0, 0.0],
-        [1.0, 1.0],
-        [0.0, 1.0]
+		[0.0, 0.0],
+		[1.0, 0.0],
+		[1.0, 1.0],
+		[0.0, 1.0]
 		// @formatter:on
 	];
 }

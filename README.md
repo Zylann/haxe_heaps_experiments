@@ -3,6 +3,7 @@ Testing Heaps
 
 This is a test project in which I learn and experiment with Haxe and Heaps.IO.
 
+
 Troubleshooting notes
 ------------------------
 
@@ -44,5 +45,8 @@ In Haxe, arrays are not bound checked. When reading, they either return null, or
 
 #### Value types
 
-Haxe seems to only have classes for structured data, which are heap-allocated. And like in Java or Javascript, that means all abstraction we can usually build with value-type vector math trigger allocations and garbage collection (in particular code running every frame, mesh generation...).
-Will need to investigate how people deal with this. 
+Haxe seems to only have classes for structured data, which are heap-allocated. That means all abstraction we can usually build with value-types such as vector math triggers allocations and garbage collection (in particular code running every frame, mesh generation...).
+Some ideas:
+- "Flatten" fields within objects they are used in
+- "Flatten" fields if used in arrays, for example a large array of 3D points could be an array of `Float` which has better chances of being packed (or use dedicated containers when available?)
+- Use `inline` so the compiler gets a chance to elide temporary objects if they don't escape function scope? 

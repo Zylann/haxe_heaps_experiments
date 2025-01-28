@@ -46,9 +46,7 @@ class VoxelBuffer {
 			throw new Exception("Invalid position");
 		}
 		var i = getIndex(x, y, z);
-		// return data.get(i);
-		// We already checked bounds above.
-		return haxe.io.Bytes.fastGet(data.getData(), i);
+		return data.get(i);
 	}
 
 	public function setVoxel(x:Int, y:Int, z:Int, v:Int) {
@@ -56,7 +54,6 @@ class VoxelBuffer {
 			throw new Exception("Invalid position");
 		}
 		var i = getIndex(x, y, z);
-		// No fastSet?
 		data.set(i, v);
 	}
 }

@@ -8,7 +8,7 @@ class Mesher {
 	static inline var AIR = 0;
 
 	// Takes a padded 3D buffer of voxel data and turns it into a cubic voxel mesh.
-	public static function build(voxels:VoxelBuffer):h3d.prim.MeshPrimitive {
+	public static function build(voxels:VoxelBuffer):VoxelMeshPrimitive {
 		var vertices = new hxd.FloatBuffer();
 		var quadCount = 0;
 
@@ -100,6 +100,7 @@ class Mesher {
 		}
 
 		// Generate index buffer, assuming we only use quads
+		// TODO Create multiple prims when there are more than 65536 vertices
 		// TODO Optimization: could we re-use the same index buffer?
 		// Doing this would need the ability to specify a custom triangle count in meshes,
 		// instead of leaving it to the actual length of the index buffer

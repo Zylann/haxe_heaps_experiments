@@ -1,5 +1,6 @@
 import haxe.ds.ReadOnlyArray;
 
+// Constants and lookup tables.
 // TODO No static class? Any equivalent?
 // I tried putting this stuff at module-level, but it makes it tedious to import. Maybe I'm missing something?
 class Cube {

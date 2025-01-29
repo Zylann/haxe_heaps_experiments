@@ -1,17 +1,27 @@
 import h3d.mat.Material;
 import h3d.scene.Mesh;
 
-class Main extends hxd.App {
-	static inline var CHUNK_SIZE = 32;
+class Constants {
+	public static inline var CHUNK_SIZE = 32;
+}
 
-	var pendingChunks:Array<Vector3i> = [];
+class Main extends hxd.App {
 	var chunkMaterial: Material;
-	var meshingVoxelBuffer: VoxelBuffer;
 	var debugDisplay: DebugDisplay;
 	var playerCamera: PlayerCamera;
+	// var loadChunkTaskPool: Array<LoadChunkTask> = [];
+
+	var chunkLoadingOutput: MPSCList<LoadChunkTask> = new MPSCList<LoadChunkTask>();
+	var taskRunner: ThreadedTaskRunner;
 
 	function new() {
+		var backgroundThreadCount = 4;
+
+		taskRunner = new ThreadedTaskRunner(backgroundThreadCount);
+		LoadChunkTask.initThreadLocals(backgroundThreadCount);
+
 		h3d.mat.MaterialSetup.current = new h3d.mat.PbrMaterialSetup();
+
 		super();
 	}
 
@@ -54,35 +64,21 @@ class Main extends hxd.App {
 		chunkMaterial.mainPass.enableLights = true;
 		chunkMaterial.shadows = true;
 
-		meshingVoxelBuffer = VoxelBuffer.makeCubic(CHUNK_SIZE + 2 * Mesher.PAD);
-
+		var tasks : Array<Task> = [];
 		var cr = 8;
 		for (cx in -cr...cr) {
 			for (cy in -cr...cr) {
 				for (cz in -2...4) {
-					pendingChunks.push(new Vector3i(cx, cy, cz));
+					var task = new LoadChunkTask(cx, cy, cz, 0, 0, 0, chunkLoadingOutput);
+					tasks.push(task);
 				}
 			}
 		}
 
-		pendingChunks.sort(comparePendingChunks);
+		taskRunner.pushTasks(tasks);
 
 		var camera = s3d.camera;
 		camera.fovY = 80;
-	}
-
-	function comparePendingChunks(a:Vector3i, b:Vector3i):Int {
-		// TODO Take this from camera location and don't allocate
-		var interest = new Vector3i(0, 0, 0);
-		var da = a.distanceToSq(interest);
-		var db = b.distanceToSq(interest);
-		// Closest comes last
-		if (da < db) {
-			return 1;
-		} else if (da > db) {
-			return -1;
-		}
-		return 0;
 	}
 
 	override function update(dt:Float) {
@@ -92,35 +88,36 @@ class Main extends hxd.App {
 
 		updateChunkLoading();
 
-		debugDisplay.update(dt, pendingChunks.length);
+		debugDisplay.update(dt, taskRunner.getPendingTasksCount());
 	}
 
 	function updateChunkLoading() {
-		var timeBeforeS = haxe.Timer.stamp();
-		final budgetS = 0.25 / 60.0;
+		chunkLoadingOutput.beginConsume();
 
-		while (pendingChunks.length > 0) {
-			var cpos : Vector3i = pendingChunks.pop();
-		
-			var originX = cpos.x * CHUNK_SIZE;
-			var originY = cpos.y * CHUNK_SIZE;
-			var originZ = cpos.z * CHUNK_SIZE;
+		for (task in chunkLoadingOutput.readerList) {
+			var meshPrim = task.outputPrim;
 
-			ChunkGenerator.generateChunkVoxels(meshingVoxelBuffer, originX, originY, originZ);
-
-			var meshPrim = Mesher.build(meshingVoxelBuffer);
-			
 			// Empty?
 			if (meshPrim != null) {
 				var mesh = new Mesh(meshPrim, chunkMaterial, s3d);
+
+				var originX = task.chunkX * Constants.CHUNK_SIZE;
+				var originY = task.chunkY * Constants.CHUNK_SIZE;
+				var originZ = task.chunkZ * Constants.CHUNK_SIZE;
+
 				mesh.setPosition(originX, originY, originZ);
 			}
 
-			var nowS = haxe.Timer.stamp();
-			if (nowS - timeBeforeS >= budgetS) {
-				break;
-			}
+			// loadChunkTaskPool.push(task);
 		}
+		
+		chunkLoadingOutput.endConsume();
+	}
+
+	// TODO Is it the right function to overload to handle shutdown?
+	override function dispose() {
+		taskRunner.dispose();
+		super.dispose();
 	}
 
 	static function main() {

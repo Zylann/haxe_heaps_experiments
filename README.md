@@ -29,24 +29,16 @@ Format on save is my daily go-to, except sometimes I want to not format stuff li
 Use `// @formatter:off`.
 Info about the code formatter: https://github.com/HaxeCheckstyle/haxe-formatter/blob/master/README.md
 
-### Weird Heaps permanent breakage
-
-At some point a weird error started permanently occurring in Heaps, `Recursive array set method `, in several places that were doing array access. No idea what this was about or how it sneaked in, but it kept happening even with an empty Main.
-
-Assumption: maybe I accidentally modified one of the Heaps files, since I regularly open them to inspect how they are written?
-
-Fixed by re-installing Heaps.
-
-### Nitpicks
-
-#### Arrays
-
-In Haxe, arrays are not bound checked. When reading, they either return null, or something unspecified. And upon write, they even resize to fit. This is very different to safety approaches I used in other typed languages. It seems that it could be a source of bugs.
-
-#### Value types
+### Value types
 
 Haxe seems to only have classes for structured data, which are heap-allocated. That means all abstraction we can usually build with value-types such as vector math triggers allocations and garbage collection (in particular code running every frame, mesh generation...).
 Some ideas:
 - "Flatten" fields within objects they are used in
-- "Flatten" fields if used in arrays, for example a large array of 3D points could be an array of `Float` which has better chances of being packed (or use dedicated containers when available?)
-- Use `inline` so the compiler gets a chance to elide temporary objects if they don't escape function scope? 
+- "Flatten" fields if used in arrays, for example a large array of 3D points could be an array of `Float` which has better chances of being packed (or use dedicated containers when available)
+- Use target-specific features, like `@:struct` on HashLink and C# (why the doc doesn't say C++?)
+- Use `inline` so the compiler gets a chance to elide temporary objects if they don't escape function scope
+
+### Arrays
+
+In Haxe, arrays are not bound checked. When reading, they either return null, or something unspecified. And upon write, they even resize to fit. This is very different to safety approaches I used in other typed languages. It seems that it could be a source of bugs.
+

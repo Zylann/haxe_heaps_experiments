@@ -1,5 +1,8 @@
 # HashLink binary executables
 *.hl
 
+# Hashlink profiling dumps
+hlprofile.dump
+
 # Temporary/cache files
 .tmp/

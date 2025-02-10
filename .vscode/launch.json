@@ -8,6 +8,21 @@
             "cwd": "${workspaceFolder}",
             // "preLaunchTask": "Build for HashLink"
 
+            // TODO That was the example from Heaps.IO, but it no longer works after changing PC?
+            // https://github.com/vshaxe/vshaxe/issues/658
+            // "preLaunchTask": {
+            //     "type": "haxe",
+            //     "args": "active configuration"
+            // }
+        },
+        {
+            "name": "Launch HashLink With Profiler",
+            "type": "hl",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "profileSamples": 10000,
+            // "preLaunchTask": "Build for HashLink"
+
             // TODO That was the example from Heaps.IO, but it longer works after changing PC.
             // https://github.com/vshaxe/vshaxe/issues/658
             // "preLaunchTask": {
@@ -15,6 +30,7 @@
             //     "args": "active configuration"
             // }
         }
+
         // {
         //     "name": "Launch Chrome against localhost",
         //     "type": "chrome",

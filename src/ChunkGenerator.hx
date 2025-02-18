@@ -15,7 +15,7 @@ class ChunkGenerator {
 			for (rx in 0...voxels.sizeX) {
 				var x = originX + rx;
 
-				var height = 10 + 40.0 * perlin.perlin(seed, x * 0.01 + noiseOffsetX, y * 0.01 + noiseOffsetY, 4);
+				var height = 50 + 30.0 * perlin.perlin(seed, x * 0.01 + noiseOffsetX, y * 0.01 + noiseOffsetY, 4);
 				var n2 = perlin.perlin(seed + 1, x * 0.02 + noiseOffsetX, y * 0.02 + noiseOffsetX, 3);
 
 				for (rz in 0...voxels.sizeZ) {

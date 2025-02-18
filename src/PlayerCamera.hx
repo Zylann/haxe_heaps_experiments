@@ -1,6 +1,9 @@
+import h3d.Vector;
 import h3d.scene.Scene;
 
 class PlayerCamera {
+	public var targetPosition: Vector = new Vector();
+
 	var base: h3d.Camera;
 	var animYaw: Float;
 
@@ -17,6 +20,8 @@ class PlayerCamera {
 		//   /
 		//  Y
 		var camDistance = 120.0;
-		base.pos.set(camDistance * Math.cos(animYaw), camDistance * Math.sin(animYaw), 50.0);
+		base.pos.load(
+			targetPosition + new Vector(camDistance * Math.cos(animYaw), camDistance * Math.sin(animYaw), 50.0)
+		);
 	}
 }

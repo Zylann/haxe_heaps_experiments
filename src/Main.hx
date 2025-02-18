@@ -1,24 +1,20 @@
-import h3d.mat.Material;
+import TerrainRenderer.MeshChunkTask;
+import hxd.Window;
 import h3d.scene.Mesh;
 
-class Constants {
-	public static inline var CHUNK_SIZE = 32;
-}
-
 class Main extends hxd.App {
-	var chunkMaterial: Material;
 	var debugDisplay: DebugDisplay;
 	var playerCamera: PlayerCamera;
-	// var loadChunkTaskPool: Array<LoadChunkTask> = [];
-
-	var chunkLoadingOutput: MPSCList<LoadChunkTask> = new MPSCList<LoadChunkTask>();
+	var terrain: Terrain;
+	var terrainRenderer: TerrainRenderer;
 	var taskRunner: ThreadedTaskRunner;
 
 	function new() {
 		var backgroundThreadCount = 4;
 
 		taskRunner = new ThreadedTaskRunner(backgroundThreadCount);
-		LoadChunkTask.initThreadLocals(backgroundThreadCount);
+		
+		MeshChunkTask.initThreadLocals(backgroundThreadCount);
 
 		h3d.mat.MaterialSetup.current = new h3d.mat.PbrMaterialSetup();
 
@@ -27,7 +23,6 @@ class Main extends hxd.App {
 
 	override function init() {
 		debugDisplay = new DebugDisplay(s2d);
-		playerCamera = new PlayerCamera(s3d);
 
 		{
 			var prim = new h3d.prim.Cube();
@@ -59,26 +54,23 @@ class Main extends hxd.App {
 		sunLight.shadows.bias = 0.005;
 
 		var atlas = hxd.Res.atlas.toTexture();
-		chunkMaterial = h3d.mat.Material.create(atlas);
+		var chunkMaterial = h3d.mat.Material.create(atlas);
 		chunkMaterial.texture.filter = h3d.mat.Data.Filter.Nearest;
 		chunkMaterial.mainPass.enableLights = true;
 		chunkMaterial.shadows = true;
 
-		var tasks : Array<Task> = [];
-		var cr = 8;
-		for (cx in -cr...cr) {
-			for (cy in -cr...cr) {
-				for (cz in -2...4) {
-					var task = new LoadChunkTask(cx, cy, cz, 0, 0, 0, chunkLoadingOutput);
-					tasks.push(task);
-				}
-			}
-		}
+		terrain = new Terrain(new Vector3i(12, 12, 5), taskRunner);
 
-		taskRunner.pushTasks(tasks);
+		terrainRenderer = new TerrainRenderer(terrain, s3d, taskRunner, chunkMaterial);
+		terrain.renderer = terrainRenderer;
+
+		terrain.loadAllChunks();
 
 		var camera = s3d.camera;
 		camera.fovY = 80;
+		playerCamera = new PlayerCamera(s3d);
+		playerCamera.targetPosition.load((terrain.sizeInChunks * Constants.CHUNK_SIZE) / 2);
+		camera.target.load(playerCamera.targetPosition);
 	}
 
 	override function update(dt:Float) {
@@ -86,32 +78,10 @@ class Main extends hxd.App {
 
 		playerCamera.update(dt);
 
-		updateChunkLoading();
+		terrain.update();
+		terrainRenderer.update();
 
 		debugDisplay.update(dt, taskRunner.getPendingTasksCount());
-	}
-
-	function updateChunkLoading() {
-		chunkLoadingOutput.beginConsume();
-
-		for (task in chunkLoadingOutput.readerList) {
-			var meshPrim = task.outputPrim;
-
-			// Empty?
-			if (meshPrim != null) {
-				var mesh = new Mesh(meshPrim, chunkMaterial, s3d);
-
-				var originX = task.chunkX * Constants.CHUNK_SIZE;
-				var originY = task.chunkY * Constants.CHUNK_SIZE;
-				var originZ = task.chunkZ * Constants.CHUNK_SIZE;
-
-				mesh.setPosition(originX, originY, originZ);
-			}
-
-			// loadChunkTaskPool.push(task);
-		}
-		
-		chunkLoadingOutput.endConsume();
 	}
 
 	// TODO Is it the right function to overload to handle shutdown?

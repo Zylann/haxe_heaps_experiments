@@ -1,6 +1,7 @@
+import h3d.Vector;
 import hxd.Math;
 
-class Vector3i {
+class Vector3iImpl {
 	public var x:Int;
 	public var y:Int;
 	public var z:Int;
@@ -14,6 +15,45 @@ class Vector3i {
 	public inline function distanceToSq(other:Vector3i):Int {
 		return cDistanceSq(x, y, z, other.x, other.y, other.z);
 	}
+
+	public inline function isValidSize(): Bool {
+		return x > 0 && y > 0 && z > 0;
+	}
+
+	public inline function getVolume(): Int {
+		return x * y * z;
+	}
+
+	public inline function getXYZIndex(size: Vector3i): Int {
+		return x + size.x * (y + size.y * z);
+	}
+
+	public function toString() {
+		return '{${x},${y},${z}}';
+	}
+
+	// When used as a size, tells if the point is in bounds
+	public inline function containsPoint(pos: Vector3i): Bool {
+		return pos.x >= 0 && pos.y >= 0 && pos.z >= 0 && pos.x < x && pos.y < y && pos.z < z;
+	}
+
+	public inline function mulScalar(i: Int): Vector3i {
+		return new Vector3i(x * i, y * i, z * i);
+	}
+
+	public inline function divScalar(d: Float): Vector {
+		return new Vector(x / d, y / d, z / d);
+	}
+
+	public inline function intDivScalar(i: Int) {
+		return new Vector3i(Std.int(x / i), Std.int(y / i), Std.int(z / i));
+	}
+
+	public inline function chebychevDistance(other: Vector3i): Int {
+		return cChebychevDistance(x, y, z, other.x, other.y, other.z);
+	}
+
+	//
 
 	public static inline function cDistance(x1: Int, y1: Int, z1: Int, x2: Int, y2: Int, z2: Int): Float {
 		return Math.sqrt(cDistance(x1, y1, z1, x2, y2, z2));
@@ -32,5 +72,27 @@ class Vector3i {
 		var dy = Math.iabs(y2 - y1);
 		var dz = Math.iabs(z2 - z1);
 		return Math.imax(Math.imax(dx, dy), dz);
+	}
+}
+
+@:forward 
+abstract Vector3i(Vector3iImpl) {
+	public inline function new(x: Int, y: Int, z: Int) {
+		this = new Vector3iImpl(x, y, z);
+	}
+
+	@:op(a * b)
+	public inline function mulScalar(m: Int): Vector3i {
+		return this.mulScalar(m);
+	}
+
+	@:op(a * b)
+	public static inline function mulScalarPre(m: Int, v: Vector3i): Vector3i {
+		return v.mulScalar(m);
+	}
+
+	@:op(a / b)
+	public inline function divScalar(m: Float): Vector {
+		return this.divScalar(m);
 	}
 }

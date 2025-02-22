@@ -27,7 +27,6 @@ class VoxelBuffer {
 
 	public inline function clone(): VoxelBuffer {
 		var d = new VoxelBuffer(sizeX, sizeY, sizeZ);
-		var volume = sizeX * sizeY * sizeZ;
 		d.data.blit(0, data, 0, data.length);
 		return d;
 	}

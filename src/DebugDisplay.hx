@@ -24,7 +24,7 @@ class DebugDisplay {
 		}
 
 		timeBeforeUpdate -= dt;
-		if(timeBeforeUpdate <= 0.0) {
+		if (timeBeforeUpdate <= 0.0) {
 			timeBeforeUpdate = UPDATE_INTERVAL;
 			updateText(pendingTasksCount);
 		}
@@ -32,15 +32,15 @@ class DebugDisplay {
 
 	function updateText(pendingTasksCount: Int) {
 		var gcStats = Gc.stats();
-		
+
 		var gcTotalAllocated = gcStats.totalAllocated;
 		var gcCurrentMemory = gcStats.currentMemory;
 
-// 		textObject.text = '
-// FPS: ${displayedFPS}
-// Pending tasks: ${pendingTasksCount}
-// GC total allocated: ${gcTotalAllocated}
-// GC current memory: ${gcCurrentMemory}';
+		// 		textObject.text = '
+		// FPS: ${displayedFPS}
+		// Pending tasks: ${pendingTasksCount}
+		// GC total allocated: ${gcTotalAllocated}
+		// GC current memory: ${gcCurrentMemory}';
 
 		// StringBuf doesn't have any clear or reset method, which implies it has to be
 		// re-created each frame. It should be avoidable.

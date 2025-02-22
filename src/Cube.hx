@@ -12,7 +12,7 @@ class Cube {
 	public static inline var SIDE_POSITIVE_Z = 5;
 	public static inline var SIDE_COUNT = 6;
 
-	public static final sideVertices:ReadOnlyArray<ReadOnlyArray<Float>> = [
+	public static final sideVertices: ReadOnlyArray<ReadOnlyArray<Float>> = [
 		// @formatter:off
 		[ // -X
 			0, 0, 0,
@@ -53,7 +53,7 @@ class Cube {
 		// @formatter:on
 	];
 
-	public static final sideNormals:ReadOnlyArray<ReadOnlyArray<Int>> = [
+	public static final sideNormals: ReadOnlyArray<ReadOnlyArray<Int>> = [
 		// @formatter:off
 		[-1, 0, 0],
 		[1, 0, 0],
@@ -64,7 +64,7 @@ class Cube {
 		// @formatter:on
 	];
 
-	public static final sideUVs:ReadOnlyArray<ReadOnlyArray<Float>> = [
+	public static final sideUVs: ReadOnlyArray<ReadOnlyArray<Float>> = [
 		// @formatter:off
 		[0.0, 0.0],
 		[1.0, 0.0],

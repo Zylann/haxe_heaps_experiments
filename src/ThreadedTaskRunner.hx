@@ -5,202 +5,202 @@ import sys.thread.Thread;
 import Task.TaskContext;
 
 class TaskPriorityComparer {
-    public function new(){}
-    public inline function compare(a: Task, b: Task): Bool {
-        return a.priority < b.priority;
-    }
+	public function new() {}
+
+	public inline function compare(a: Task, b: Task): Bool {
+		return a.priority < b.priority;
+	}
 }
 
 // Runs background tasks over multiple threads. Tasks can be sorted by priority.
 class ThreadedTaskRunner {
-    // Tasks that have just been scheduled but not added to the main queue.
-    // It is separate from the pickup queue to minimize locking times on threads that schedule tasks.
-    var stagedTasks: Array<Task> = [];
-    var stagedTasksMutex: Mutex = new Mutex();
-    // How many threads are in waiting state.
-    // Must lock `stagedTasksMutex`.
-    var waitingThreadsCount : Int = 0;
+	// Tasks that have just been scheduled but not added to the main queue.
+	// It is separate from the pickup queue to minimize locking times on threads that schedule tasks.
+	var stagedTasks: Array<Task> = [];
+	var stagedTasksMutex: Mutex = new Mutex();
+	// How many threads are in waiting state.
+	// Must lock `stagedTasksMutex`.
+	var waitingThreadsCount: Int = 0;
 
-    var tasksCount: Int = 0;
+	var tasksCount: Int = 0;
 
-    // Tasks that may be picked by threads.
-    var pendingTasks: PriorityQueue<Task, TaskPriorityComparer>;
-    var pendingTasksMutex: Mutex = new Mutex();
-    var tempTaskList: Array<Task> = [];
+	// Tasks that may be picked by threads.
+	var pendingTasks: PriorityQueue<Task, TaskPriorityComparer>;
+	var pendingTasksMutex: Mutex = new Mutex();
+	var tempTaskList: Array<Task> = [];
 
-    var threads: Array<Thread> = [];
+	var threads: Array<Thread> = [];
 
-    var active: Bool = true;
+	var active: Bool = true;
 
-    var semaphore: Semaphore = new Semaphore(0);
+	var semaphore: Semaphore = new Semaphore(0);
 
-    public function new(numThreads: Int) {
-        pendingTasks = new PriorityQueue<Task, TaskPriorityComparer>(new TaskPriorityComparer());
+	public function new(numThreads: Int) {
+		pendingTasks = new PriorityQueue<Task, TaskPriorityComparer>(new TaskPriorityComparer());
 
-        for (threadIndex in 0...numThreads) {
-            var thread = Thread.create(() -> threadLoop(threadIndex));
-            threads.push(thread);
-        }
-    }
+		for (threadIndex in 0...numThreads) {
+			var thread = Thread.create(() -> threadLoop(threadIndex));
+			threads.push(thread);
+		}
+	}
 
-    public function pushTasks(newTasks: Array<Task>) {
-        if (newTasks.length == 0) {
-            return;
-        }
+	public function pushTasks(newTasks: Array<Task>) {
+		if (newTasks.length == 0) {
+			return;
+		}
 
-        var needWake = false;
-        
-        {
-            stagedTasksMutex.acquire();
+		var needWake = false;
 
-            // TODO No optimal "addAll" method that could be optimized on static targets?
-            for (newTask in newTasks) {
-                stagedTasks.push(newTask);
-            }
-            needWake = waitingThreadsCount > 0;
-            tasksCount += newTasks.length;
+		{
+			stagedTasksMutex.acquire();
 
-            stagedTasksMutex.release();
-        }
+			// TODO No optimal "addAll" method that could be optimized on static targets?
+			for (newTask in newTasks) {
+				stagedTasks.push(newTask);
+			}
+			needWake = waitingThreadsCount > 0;
+			tasksCount += newTasks.length;
 
-        if (needWake) {
-            semaphore.release();
-        }
-    }
+			stagedTasksMutex.release();
+		}
 
-    public function getThreadCount(): Int {
-        return threads.length;
-    }
+		if (needWake) {
+			semaphore.release();
+		}
+	}
 
-    public function getPendingTasksCount(): Int {
-        var count: Int = 0;
-        stagedTasksMutex.acquire();
-        count = tasksCount;
-        stagedTasksMutex.release();
-        return count;
-    }
+	public function getThreadCount(): Int {
+		return threads.length;
+	}
 
-    public function dispose() {
-        if (!active) {
-            throw new Exception("Dispose should not be called twice");
-        }
+	public function getPendingTasksCount(): Int {
+		var count: Int = 0;
+		stagedTasksMutex.acquire();
+		count = tasksCount;
+		stagedTasksMutex.release();
+		return count;
+	}
 
-        waitForAllTasks();
+	public function dispose() {
+		if (!active) {
+			throw new Exception("Dispose should not be called twice");
+		}
 
-        // Notify all threads to exit their loop
-        active = false;
-        for (thread in threads) {
-            semaphore.release();
-        }
+		waitForAllTasks();
 
-        // Haxe Threads don't have a `join` or `dispose` method. Does that mean we don't cleanup anything from here?
-    }
+		// Notify all threads to exit their loop
+		active = false;
+		for (thread in threads) {
+			semaphore.release();
+		}
 
-    function waitForAllTasks() {
-        // Assumes we no longer schedule tasks. This is meant to be used on application shutdown.
+		// Haxe Threads don't have a `join` or `dispose` method. Does that mean we don't cleanup anything from here?
+	}
 
-        trace("Waiting for all tasks to finish...");
+	function waitForAllTasks() {
+		// Assumes we no longer schedule tasks. This is meant to be used on application shutdown.
 
-        while (true) {
-            var count = getPendingTasksCount();
-            if (count < 0) {
-                trace("Task count went negative?");
-                break;
-            } else if(count == 0) {
-                break;
-            } else {
-                Sys.sleep(0.002);
-            }
-        }
-    }
+		trace("Waiting for all tasks to finish...");
 
-    function threadLoop(threadIndex: Int) {
-        trace('Starting thread ${threadIndex}');
+		while (true) {
+			var count = getPendingTasksCount();
+			if (count < 0) {
+				trace("Task count went negative?");
+				break;
+			} else if (count == 0) {
+				break;
+			} else {
+				Sys.sleep(0.002);
+			}
+		}
+	}
 
-        var waking = false;
-        var doneTaskCountComingFromQueue : Int = 0;
+	function threadLoop(threadIndex: Int) {
+		trace('Starting thread ${threadIndex}');
 
-        var taskContext = new TaskContext(threadIndex);
+		var waking = false;
+		var doneTaskCountComingFromQueue: Int = 0;
 
-        while (active) {
-            var task: Task = null;
-            var wakeMore : Bool = false;
-            var needWait: Bool = false;
-            
-            // Task pickup
-            {
-                pendingTasksMutex.acquire();
+		var taskContext = new TaskContext(threadIndex);
 
-                // Sync point with staging queue
-                {
-                    stagedTasksMutex.acquire();
-                    
-                    // Swap staging lists
-                    var temp = stagedTasks;
-                    stagedTasks = tempTaskList;
-                    tempTaskList = temp;
+		while (active) {
+			var task: Task = null;
+			var wakeMore: Bool = false;
+			var needWait: Bool = false;
 
-                    if (stagedTasks.length != 0) {
-                        throw new Exception("Invalid state");
-                    }
+			// Task pickup
+			{
+				pendingTasksMutex.acquire();
 
-                    // Update the count of pending tasks by subtracting the amount we've done before that sync point
-                    tasksCount -= doneTaskCountComingFromQueue;
-                    doneTaskCountComingFromQueue = 0;
-                    
-                    if (pendingTasks.count == 0 && tempTaskList.length == 0) {
-                        // The thread will go to wait
-                        needWait = true;
-                        waitingThreadsCount += 1;
-                    } else {
-                        // We assume the thread will pick a task soon
-                        if (waking) {
-                            // Unregister current thread from waiting count
-                            waitingThreadsCount -= 1;
-                        }
-                        if (waitingThreadsCount > 0) {
-                            // There may be more tasks to pick so we'll wake one more thread
-                            wakeMore = true;
-                        }
-                    }
+				// Sync point with staging queue
+				{
+					stagedTasksMutex.acquire();
 
-                    stagedTasksMutex.release();
-                }
+					// Swap staging lists
+					var temp = stagedTasks;
+					stagedTasks = tempTaskList;
+					tempTaskList = temp;
 
-                // Append and sort new tasks
-                for(task in tempTaskList) {
-                    pendingTasks.push(task);
-                }
-                tempTaskList.resize(0);
+					if (stagedTasks.length != 0) {
+						throw new Exception("Invalid state");
+					}
 
-                task = pendingTasks.pop();
+					// Update the count of pending tasks by subtracting the amount we've done before that sync point
+					tasksCount -= doneTaskCountComingFromQueue;
+					doneTaskCountComingFromQueue = 0;
 
-                if (task != null) {
-                    if (needWait) {
-                        throw new Exception("Unexpected state");
-                    }
-                }
+					if (pendingTasks.count == 0 && tempTaskList.length == 0) {
+						// The thread will go to wait
+						needWait = true;
+						waitingThreadsCount += 1;
+					} else {
+						// We assume the thread will pick a task soon
+						if (waking) {
+							// Unregister current thread from waiting count
+							waitingThreadsCount -= 1;
+						}
+						if (waitingThreadsCount > 0) {
+							// There may be more tasks to pick so we'll wake one more thread
+							wakeMore = true;
+						}
+					}
 
-                pendingTasksMutex.release();
-            }
+					stagedTasksMutex.release();
+				}
 
-            waking = false;
+				// Append and sort new tasks
+				for (task in tempTaskList) {
+					pendingTasks.push(task);
+				}
+				tempTaskList.resize(0);
 
-            if (needWait) {
-                // Wait here until new tasks are added
-                semaphore.acquire();
-                waking = true;
-                continue;
-            }
+				task = pendingTasks.pop();
 
-            if (wakeMore) {
-                semaphore.release();
-            }
+				if (task != null) {
+					if (needWait) {
+						throw new Exception("Unexpected state");
+					}
+				}
 
-            task.run(taskContext);
+				pendingTasksMutex.release();
+			}
 
-            doneTaskCountComingFromQueue += 1;
-        }
-    }
+			waking = false;
+
+			if (needWait) {
+				// Wait here until new tasks are added
+				semaphore.acquire();
+				waking = true;
+				continue;
+			}
+
+			if (wakeMore) {
+				semaphore.release();
+			}
+
+			task.run(taskContext);
+
+			doneTaskCountComingFromQueue += 1;
+		}
+	}
 }
-

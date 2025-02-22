@@ -8,7 +8,7 @@ class Mesher {
 	static inline var AIR = 0;
 
 	// Takes a padded 3D buffer of voxel data and turns it into a cubic voxel mesh.
-	public static function build(voxels:VoxelBuffer):VoxelMeshPrimitive {
+	public static function build(voxels: VoxelBuffer): VoxelMeshPrimitive {
 		var vertices = new hxd.FloatBuffer();
 		var quadCount = 0;
 

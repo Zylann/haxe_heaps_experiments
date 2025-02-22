@@ -5,15 +5,16 @@ import sys.thread.Mutex;
 // Intented as an output for background tasks to be read by the main thread.
 class MPSCList<T> {
 	var writerList: Array<T> = [];
+
 	// TODO Expose an iterator?
 	public var readerList: Array<T> = [];
+
 	// TODO Don't have a mutex on targets that have no threads?
 	var mutex: Mutex = new Mutex();
 
-	public function new(){}
+	public function new() {}
 
 	public function push(item: T) {
-		// TODO Does Haxe have any mechanism similar to RAII, or simply `defer`? Would be super useful
 		mutex.acquire();
 		writerList.push(item);
 		mutex.release();

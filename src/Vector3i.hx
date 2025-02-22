@@ -2,17 +2,17 @@ import h3d.Vector;
 import hxd.Math;
 
 class Vector3iImpl {
-	public var x:Int;
-	public var y:Int;
-	public var z:Int;
+	public var x: Int;
+	public var y: Int;
+	public var z: Int;
 
-	public inline function new(x:Int, y:Int, z:Int) {
+	public inline function new(x: Int, y: Int, z: Int) {
 		this.x = x;
 		this.y = y;
 		this.z = z;
 	}
 
-	public inline function distanceToSq(other:Vector3i):Int {
+	public inline function distanceToSq(other: Vector3i): Int {
 		return cDistanceSq(x, y, z, other.x, other.y, other.z);
 	}
 
@@ -75,7 +75,7 @@ class Vector3iImpl {
 	}
 }
 
-@:forward 
+@:forward
 abstract Vector3i(Vector3iImpl) {
 	public inline function new(x: Int, y: Int, z: Int) {
 		this = new Vector3iImpl(x, y, z);

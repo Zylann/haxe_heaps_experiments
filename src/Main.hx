@@ -13,7 +13,7 @@ class Main extends hxd.App {
 		var backgroundThreadCount = 4;
 
 		taskRunner = new ThreadedTaskRunner(backgroundThreadCount);
-		
+
 		MeshChunkTask.initThreadLocals(backgroundThreadCount);
 
 		h3d.mat.MaterialSetup.current = new h3d.mat.PbrMaterialSetup();
@@ -73,7 +73,7 @@ class Main extends hxd.App {
 		camera.target.load(playerCamera.targetPosition);
 	}
 
-	override function update(dt:Float) {
+	override function update(dt: Float) {
 		super.update(dt);
 
 		playerCamera.update(dt);

@@ -1,7 +1,7 @@
 import hxd.Perlin;
 
 class ChunkGenerator {
-	public static function generateChunkVoxels(voxels:VoxelBuffer, originX:Int, originY:Int, originZ:Int) {
+	public static function generateChunkVoxels(voxels: VoxelBuffer, originX: Int, originY: Int, originZ: Int) {
 		var perlin = new Perlin();
 		var seed = 131183;
 

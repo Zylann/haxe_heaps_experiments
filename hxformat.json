@@ -28,6 +28,10 @@
                     "type": "onePerLine"
                 }
             ]
+        },
+        "opAddSubChain": {
+            "_comment": "https://github.com/HaxeCheckstyle/haxe-formatter/issues/685",
+            "defaultWrap": "noWrap"
         }
     },
     "whitespace": {

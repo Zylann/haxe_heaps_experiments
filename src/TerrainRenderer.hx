@@ -244,15 +244,12 @@ class MeshChunkTask extends Task {
 						srcI += 1;
 
 						if (src != null) {
-							// TODO The formatter breaks this in unexpected ways
-							// https://github.com/HaxeCheckstyle/haxe-formatter/issues/685
-							// @formatter:off
 							meshingVoxelBuffer.paste(
 								src.voxels,
 								rcx * Constants.CHUNK_SIZE + Mesher.PAD,
 								rcy * Constants.CHUNK_SIZE + Mesher.PAD,
-								rcz * Constants.CHUNK_SIZE + Mesher.PAD);
-							// @formatter:on
+								rcz * Constants.CHUNK_SIZE + Mesher.PAD
+							);
 							src.releaseShared();
 						}
 						// else {

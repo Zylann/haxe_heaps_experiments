@@ -1,10 +1,9 @@
 import TerrainRenderer.MeshChunkTask;
-import hxd.Window;
 import h3d.scene.Mesh;
 
 class Main extends hxd.App {
 	var debugDisplay: DebugDisplay;
-	var playerCamera: PlayerCamera;
+	var player: Player;
 	var terrain: Terrain;
 	var terrainRenderer: TerrainRenderer;
 	var taskRunner: ThreadedTaskRunner;
@@ -68,15 +67,14 @@ class Main extends hxd.App {
 
 		var camera = s3d.camera;
 		camera.fovY = 80;
-		playerCamera = new PlayerCamera(s3d);
-		playerCamera.targetPosition.load((terrain.sizeInChunks * Constants.CHUNK_SIZE) / 2);
-		camera.target.load(playerCamera.targetPosition);
+
+		player = new Player(s3d);
 	}
 
 	override function update(dt: Float) {
 		super.update(dt);
 
-		playerCamera.update(dt);
+		player.update(dt);
 
 		terrain.update();
 		terrainRenderer.update();

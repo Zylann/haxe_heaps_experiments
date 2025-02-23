@@ -1,3 +1,4 @@
+import haxe.Exception;
 import hl.Gc;
 import hxd.Timer;
 import hxd.res.DefaultFont;
@@ -10,13 +11,38 @@ class DebugDisplay {
 	var timeBeforeFPSUpdate = 0.0;
 	var timeBeforeUpdate = 0.0;
 	var displayedFPS = 0.0;
-	var stringBuffer: StringBuf = new StringBuf();
+	var labels: Array<String> = [];
+	var lines: Array<String> = [];
+
+	static var singleton: DebugDisplay;
+
+	// var stringBuffer: StringBuf = new StringBuf();
 
 	public function new(s2d: h2d.Scene) {
 		textObject = new h2d.Text(DefaultFont.get(), s2d);
+		if (singleton != null) {
+			throw new Exception("Only one instance allowed");
+		}
+		singleton = this;
 	}
 
-	public function update(dt: Float, pendingTasksCount: Int) {
+	public static inline function setText(label: String, line: String) {
+		#if debug_display
+		singleton.setTextInternal(label, line);
+		#end
+	}
+
+	function setTextInternal(label: String, line: String) {
+		var index = labels.indexOf(label);
+		if (index == -1) {
+			index = label.length;
+			labels.push(label);
+			lines.push("");
+		}
+		lines[index] = line;
+	}
+
+	public function update(dt: Float) {
 		timeBeforeFPSUpdate -= dt;
 		if (timeBeforeFPSUpdate <= 0.0) {
 			timeBeforeFPSUpdate = FPS_UPDATE_INTERVAL;
@@ -26,11 +52,11 @@ class DebugDisplay {
 		timeBeforeUpdate -= dt;
 		if (timeBeforeUpdate <= 0.0) {
 			timeBeforeUpdate = UPDATE_INTERVAL;
-			updateText(pendingTasksCount);
+			updateText();
 		}
 	}
 
-	function updateText(pendingTasksCount: Int) {
+	function updateText() {
 		var gcStats = Gc.stats();
 
 		var gcTotalAllocated = gcStats.totalAllocated;
@@ -51,10 +77,6 @@ class DebugDisplay {
 		sb.add(displayedFPS);
 		sb.add("\n");
 
-		sb.add("Pending tasks: ");
-		sb.add(pendingTasksCount);
-		sb.add("\n");
-
 		sb.add("GC total allocated: ");
 		sb.add(gcTotalAllocated);
 		sb.add("\n");
@@ -62,6 +84,13 @@ class DebugDisplay {
 		sb.add("GC current memory: ");
 		sb.add(gcCurrentMemory);
 		sb.add("\n");
+
+		for (index in 0...labels.length) {
+			sb.add(labels[index]);
+			sb.add(": ");
+			sb.add(lines[index]);
+			sb.add("\n");
+		}
 
 		textObject.text = sb.toString();
 

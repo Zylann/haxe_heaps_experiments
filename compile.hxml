@@ -8,3 +8,5 @@
 
 # HashLink version to target
 -D hl_ver=1.15.0
+
+-D debug_display

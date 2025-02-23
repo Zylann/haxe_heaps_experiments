@@ -79,7 +79,8 @@ class Main extends hxd.App {
 		terrain.update();
 		terrainRenderer.update();
 
-		debugDisplay.update(dt, taskRunner.getPendingTasksCount());
+		debugDisplay.update(dt);
+		DebugDisplay.setText("Pending tasks", '${taskRunner.getPendingTasksCount()}');
 	}
 
 	// TODO Is it the right function to overload to handle shutdown?

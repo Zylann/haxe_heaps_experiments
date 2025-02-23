@@ -64,5 +64,8 @@ class Player {
 		camera.pos.load(position);
 
 		cameraController.update();
+
+		DebugDisplay.setText("Position", '${position}');
+		DebugDisplay.setText("LookDir", '${camera.getForward()}');
 	}
 }

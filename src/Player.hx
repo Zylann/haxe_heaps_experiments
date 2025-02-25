@@ -1,3 +1,4 @@
+import h3d.col.Bounds;
 import hxd.Key;
 import h3d.scene.Scene;
 import h3d.Vector;
@@ -9,10 +10,22 @@ class Player {
 	var velocity: Vector = new Vector();
 	var speed: Float = 10.0;
 	var inertia: Float = 0.05;
+	var boxSizeX: Float = 0.8;
+	var boxSizeY: Float = 0.8;
+	var boxSizeZ: Float = 1.75;
+	var headZ: Float = 1.6;
+	var terrain: Terrain;
 
-	public function new(scene: Scene) {
+	public function new(scene: Scene, terrain: Terrain) {
 		this.scene = scene;
+		this.terrain = terrain;
 		cameraController = new PlayerCamera(scene);
+	}
+
+	public function setPosition(x: Float, y: Float, z: Float): Void {
+		position.x = x;
+		position.y = y;
+		position.z = z;
 	}
 
 	public function update(deltaTime: Float) {
@@ -59,9 +72,28 @@ class Player {
 		velocity.lerp(velocity, targetVelocity, hxd.Math.clamp(deltaTime * invInertia, 0.0, 1.0));
 
 		var motion = velocity * deltaTime;
+
+		// TODO Optimize allocation
+		var aabb = new Bounds();
+		aabb.xMin = -boxSizeX * 0.5;
+		aabb.yMin = -boxSizeY * 0.5;
+		aabb.zMin = 0.0;
+		aabb.xMax = boxSizeX * 0.5;
+		aabb.yMax = boxSizeY * 0.5;
+		aabb.zMax = boxSizeZ;
+		aabb.offset(position.x, position.y, position.z);
+
+		BoxPhysics.slideMotion(aabb, motion, terrain);
+
 		position.load(position + motion);
 
 		camera.pos.load(position);
+		camera.pos.z += headZ;
+
+		if (deltaTime > 0.0) {
+			// Apply potential effects of collision to velocity
+			velocity.load(motion * (1.0 / deltaTime));
+		}
 
 		cameraController.update();
 

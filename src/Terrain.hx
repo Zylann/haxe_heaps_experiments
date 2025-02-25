@@ -33,6 +33,17 @@ class Terrain {
 		return chunks[index];
 	}
 
+	public function getVoxel(x: Int, y: Int, z: Int): Int {
+		var pos = new Vector3i(x, y, z);
+		var cpos = pos >> Constants.CHUNK_SIZE_PO2;
+		var chunk = getChunk(cpos);
+		if (chunk == null) {
+			return 0;
+		}
+		var rpos = pos & Constants.CHUNK_SIZE_MASK;
+		return chunk.voxels.getVoxel(rpos.x, rpos.y, rpos.z);
+	}
+
 	public function loadAllChunks() {
 		var tasks = new Array<Task>();
 

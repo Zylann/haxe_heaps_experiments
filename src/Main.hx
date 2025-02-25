@@ -68,7 +68,8 @@ class Main extends hxd.App {
 		var camera = s3d.camera;
 		camera.fovY = 80;
 
-		player = new Player(s3d);
+		player = new Player(s3d, terrain);
+		player.setPosition(10, 10, 50);
 	}
 
 	override function update(dt: Float) {

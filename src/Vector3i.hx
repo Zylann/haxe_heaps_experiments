@@ -99,4 +99,14 @@ abstract Vector3i(Vector3iImpl) {
 	public inline function divScalar(m: Float): Vector {
 		return this.divScalar(m);
 	}
+
+	@:op(a >> b)
+	public inline function rshift(s: Int): Vector3i {
+		return new Vector3i(this.x >> s, this.y >> s, this.z >> s);
+	}
+
+	@:op(a & b)
+	public inline function maskAnd(m: Int): Vector3i {
+		return new Vector3i(this.x & m, this.y & m, this.z & m);
+	}
 }

@@ -45,7 +45,7 @@ class Terrain {
 					}
 
 					// TODO Fill in interest position
-					var task = new LoadChunkTask(cx, cy, cz, 0, 0, 0, chunkLoadingOutput);
+					var task = new LoadChunkTask(new Vector3i(cx, cy, cz), Vector3i.splat(0), chunkLoadingOutput);
 					tasks.push(task);
 				}
 			}
@@ -119,20 +119,16 @@ class LoadChunkTask extends Task {
 
 	public var outputChunk: TerrainChunk;
 
-	public function new(
-		cx: Int,
-		cy: Int,
-		cz: Int,
-		interestX: Int,
-		interestY: Int,
-		interestZ: Int,
+	public inline function new(
+		chunkPosition: Vector3i,
+		interestChunkPosition: Vector3i,
 		outputList: MPSCList<LoadChunkTask>
 	) {
-		chunkX = cx;
-		chunkY = cy;
-		chunkZ = cz;
+		chunkX = chunkPosition.x;
+		chunkY = chunkPosition.y;
+		chunkZ = chunkPosition.z;
 		this.outputList = outputList;
-		priority = 100 - new Vector3i(cx, cy, cz).chebychevDistance(new Vector3i(interestX, interestY, interestZ));
+		priority = 100 - chunkPosition.chebychevDistance(interestChunkPosition);
 	}
 
 	public override function run(context: TaskContext) {

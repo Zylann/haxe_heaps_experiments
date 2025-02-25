@@ -81,6 +81,10 @@ abstract Vector3i(Vector3iImpl) {
 		this = new Vector3iImpl(x, y, z);
 	}
 
+	public static inline function splat(v: Int): Vector3i {
+		return new Vector3i(v, v, v);
+	}
+
 	@:op(a * b)
 	public inline function mulScalar(m: Int): Vector3i {
 		return this.mulScalar(m);

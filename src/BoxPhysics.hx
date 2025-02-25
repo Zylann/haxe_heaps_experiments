@@ -121,10 +121,13 @@ class BoxPhysics {
 		return b;
 	}
 
-	static inline function calculateIOffset(
+	// Clamps passed motion in the X axis to eventually prevent `inBox` from colliding with `inOther`,
+	// in a coordinate system where XYZ are swizzled according to `i, j, k` (this approach is used to avoid
+	// having to rewrite 3 times the same function only with different coordinates)
+	static inline function clampMotionInAxis(
 		inBox: h3d.col.Bounds,
-		inOther: h3d.col.Bounds,
 		motion: Float,
+		inOther: h3d.col.Bounds,
 		i: Int,
 		j: Int,
 		k: Int
@@ -135,22 +138,27 @@ class BoxPhysics {
 		var other = swizzleBox(inOther, i, j, k);
 
 		if (other.zMax <= box.zMin || other.zMin >= box.zMax) {
+			// Boxes don't overlap in Z axis
 			return motion;
 		}
 
 		if (other.yMax <= box.yMin || other.yMin >= box.yMax) {
+			// Boxes don't overlap in Y axis
 			return motion;
 		}
 
-		if (motion > 0.0 && other.xMax <= box.xMin) {
-			var off = box.xMin - other.xMax - EPSILON;
+		// Now figure out collision offset in the remaining axis, according to motion in that axis
+
+		if (motion > 0.0 && box.xMax <= other.xMin) {
+			var off = other.xMin - box.xMax - EPSILON;
 			if (off < motion) {
+				// Colliding, clamp motion
 				motion = off;
 			}
 		}
 
-		if (motion < 0.0 && other.xMin >= box.xMax) {
-			var off = box.xMax - other.xMin + EPSILON;
+		if (motion < 0.0 && box.xMin >= other.xMax) {
+			var off = other.xMax - box.xMin + EPSILON;
 			if (off > motion) {
 				motion = off;
 			}
@@ -199,19 +207,19 @@ class BoxPhysics {
 		var newMotion = motion.clone();
 
 		for (other in environmentBoxes) {
-			newMotion.y = calculateIOffset(other, box, newMotion.y, 1, 0, 2);
+			newMotion.y = clampMotionInAxis(box, newMotion.y, other, 1, 0, 2);
 		}
 		box.yMin += newMotion.y;
 		box.yMax += newMotion.y;
 
 		for (other in environmentBoxes) {
-			newMotion.x = calculateIOffset(other, box, newMotion.x, 0, 1, 2);
+			newMotion.x = clampMotionInAxis(box, newMotion.x, other, 0, 1, 2);
 		}
 		box.xMin += newMotion.x;
 		box.xMax += newMotion.x;
 
 		for (other in environmentBoxes) {
-			newMotion.z = calculateIOffset(other, box, newMotion.z, 2, 1, 0);
+			newMotion.z = clampMotionInAxis(box, newMotion.z, other, 2, 1, 0);
 		}
 		box.zMin += newMotion.z;
 		box.zMax += newMotion.z;

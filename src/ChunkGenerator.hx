@@ -1,22 +1,24 @@
-import hxd.Perlin;
-
 class ChunkGenerator {
 	public static function generateChunkVoxels(voxels: VoxelBuffer, originX: Int, originY: Int, originZ: Int) {
-		var perlin = new Perlin();
 		var seed = 131183;
 
-		// TODO Apparently hxd.Perlin returns garbage if any coordinate is negative.
-		// This is not good for infinite terrain usage.
-		var noiseOffsetX = 1000.0;
-		var noiseOffsetY = 1000.0;
+		var noise1 = new FastNoiseLite.Noise(seed);
+		noise1.frequency = 1.0 / 200.0;
+		noise1.fractalType = FastNoiseLite.FractalType.FBm;
+		noise1.octaves = 4;
+
+		var noise2 = new FastNoiseLite.Noise(seed + 1);
+		noise2.frequency = 1.0 / 50.0;
+		noise2.fractalType = FastNoiseLite.FractalType.FBm;
+		noise2.octaves = 3;
 
 		for (ry in 0...voxels.sizeY) {
 			var y = originY + ry;
 			for (rx in 0...voxels.sizeX) {
 				var x = originX + rx;
 
-				var height = 50 + 30.0 * perlin.perlin(seed, x * 0.01 + noiseOffsetX, y * 0.01 + noiseOffsetY, 4);
-				var n2 = perlin.perlin(seed + 1, x * 0.02 + noiseOffsetX, y * 0.02 + noiseOffsetX, 3);
+				var height = 50.0 + 30.0 * noise1.getNoise2D(x, y);
+				var n2 = noise2.getNoise2D(x, y);
 
 				for (rz in 0...voxels.sizeZ) {
 					var z = originZ + rz;

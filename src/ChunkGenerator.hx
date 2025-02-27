@@ -1,17 +1,22 @@
 class ChunkGenerator {
-	public static function generateChunkVoxels(voxels: VoxelBuffer, originX: Int, originY: Int, originZ: Int) {
+	var noise1: FastNoiseLite.Noise;
+	var noise2: FastNoiseLite.Noise;
+
+	public function new() {
 		var seed = 131183;
 
-		var noise1 = new FastNoiseLite.Noise(seed);
+		noise1 = new FastNoiseLite.Noise(seed);
 		noise1.frequency = 1.0 / 200.0;
 		noise1.fractalType = FastNoiseLite.FractalType.FBm;
 		noise1.octaves = 4;
 
-		var noise2 = new FastNoiseLite.Noise(seed + 1);
+		noise2 = new FastNoiseLite.Noise(seed + 1);
 		noise2.frequency = 1.0 / 50.0;
 		noise2.fractalType = FastNoiseLite.FractalType.FBm;
 		noise2.octaves = 3;
+	}
 
+	public function generateChunkVoxels(voxels: VoxelBuffer, originX: Int, originY: Int, originZ: Int) {
 		for (ry in 0...voxels.sizeY) {
 			var y = originY + ry;
 			for (rx in 0...voxels.sizeX) {

@@ -7,6 +7,8 @@ class Terrain {
 
 	public var renderer: TerrainRenderer;
 
+	var generator: ChunkGenerator;
+
 	// Fixed-size for now
 	var chunks: Vector<TerrainChunk>;
 	var taskRunner: ThreadedTaskRunner;
@@ -23,6 +25,8 @@ class Terrain {
 		chunks = new Vector<TerrainChunk>(sizeInChunks.getVolume());
 
 		this.taskRunner = taskRunner;
+
+		generator = new ChunkGenerator();
 	}
 
 	public inline function getChunk(cpos: Vector3i): TerrainChunk {
@@ -56,7 +60,12 @@ class Terrain {
 					}
 
 					// TODO Fill in interest position
-					var task = new LoadChunkTask(new Vector3i(cx, cy, cz), Vector3i.splat(0), chunkLoadingOutput);
+					var task = new LoadChunkTask(
+						new Vector3i(cx, cy, cz),
+						Vector3i.splat(0),
+						generator,
+						chunkLoadingOutput
+					);
 					tasks.push(task);
 				}
 			}
@@ -126,6 +135,8 @@ class LoadChunkTask extends Task {
 	public var chunkY: Int;
 	public var chunkZ: Int;
 
+	var generator: ChunkGenerator;
+
 	var outputList: MPSCList<LoadChunkTask>;
 
 	public var outputChunk: TerrainChunk;
@@ -133,6 +144,7 @@ class LoadChunkTask extends Task {
 	public inline function new(
 		chunkPosition: Vector3i,
 		interestChunkPosition: Vector3i,
+		generator: ChunkGenerator,
 		outputList: MPSCList<LoadChunkTask>
 	) {
 		chunkX = chunkPosition.x;
@@ -140,6 +152,7 @@ class LoadChunkTask extends Task {
 		chunkZ = chunkPosition.z;
 		this.outputList = outputList;
 		priority = 100 - chunkPosition.chebychevDistance(interestChunkPosition);
+		this.generator = generator;
 	}
 
 	public override function run(context: TaskContext) {
@@ -149,7 +162,7 @@ class LoadChunkTask extends Task {
 
 		outputChunk = new TerrainChunk();
 
-		ChunkGenerator.generateChunkVoxels(outputChunk.voxels, originX, originY, originZ);
+		generator.generateChunkVoxels(outputChunk.voxels, originX, originY, originZ);
 
 		outputList.push(this);
 	}

@@ -1,3 +1,4 @@
+import hxd.Key;
 import TerrainRenderer.MeshChunkTask;
 import h3d.scene.Mesh;
 
@@ -7,6 +8,9 @@ class Main extends hxd.App {
 	var terrain: Terrain;
 	var terrainRenderer: TerrainRenderer;
 	var taskRunner: ThreadedTaskRunner;
+	var uiCenter: h2d.Flow;
+	var pauseMenu: PauseMenu;
+	var uiStyle: h2d.domkit.Style;
 
 	function new() {
 		var backgroundThreadCount = 4;
@@ -70,6 +74,31 @@ class Main extends hxd.App {
 
 		player = new Player(s3d, terrain);
 		player.setPosition(10, 10, 50);
+
+		// UI
+
+		uiStyle = new h2d.domkit.Style();
+		uiStyle.load(hxd.Res.style);
+
+		uiCenter = new h2d.Flow(s2d);
+		uiCenter.horizontalAlign = uiCenter.verticalAlign = Middle;
+		onResize();
+
+		pauseMenu = new PauseMenu(uiCenter);
+		// pauseMenu.visible = false;
+
+		uiStyle.addObject(pauseMenu);
+
+		// Allow debugging using middle click
+		uiStyle.allowInspect = true;
+
+		s3d.addEventListener(onScene3DEvent);
+	}
+
+	override function onResize() {
+		// Cover whole screen
+		uiCenter.minWidth = uiCenter.maxWidth = s2d.width;
+		uiCenter.minHeight = uiCenter.maxHeight = s2d.height;
 	}
 
 	override function update(dt: Float) {
@@ -80,8 +109,39 @@ class Main extends hxd.App {
 		terrain.update();
 		terrainRenderer.update();
 
+		uiStyle.sync(dt);
+
 		debugDisplay.update(dt);
 		DebugDisplay.setText("Pending tasks", '${taskRunner.getPendingTasksCount()}');
+	}
+
+	function onScene3DEvent(event: hxd.Event) {
+		if (player.isControllerEnabled) {
+			switch (event.kind) {
+				case EKeyDown:
+					if (event.keyCode == Key.ESCAPE) {
+						player.isControllerEnabled = false;
+						pauseMenu.visible = true;
+					}
+
+				default:
+			}
+		} else {
+			switch (event.kind) {
+				case EKeyDown:
+					if (event.keyCode == Key.ESCAPE) {
+						pauseMenu.visible = false;
+						player.isControllerEnabled = true;
+					}
+
+				case EPush:
+					if (pauseMenu.visible == false) {
+						player.isControllerEnabled = true;
+					}
+
+				default:
+			}
+		}
 	}
 
 	// TODO Is it the right function to overload to handle shutdown?

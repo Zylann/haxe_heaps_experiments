@@ -4,6 +4,8 @@ import h3d.scene.Scene;
 import h3d.Vector;
 
 class Player {
+	public var isControllerEnabled(get, set): Bool;
+
 	var scene: Scene;
 	var cameraController: PlayerCamera;
 	var position: Vector = new Vector();
@@ -33,7 +35,7 @@ class Player {
 		var inputY = 0.0;
 		var inputZ = 0.0;
 
-		if (cameraController.isEnabled()) {
+		if (cameraController.enabled) {
 			if (Key.isDown(Key.A)) {
 				inputX = -1.0;
 			}
@@ -99,5 +101,13 @@ class Player {
 
 		DebugDisplay.setText("Position", '${position}');
 		DebugDisplay.setText("LookDir", '${camera.getForward()}');
+	}
+
+	function set_isControllerEnabled(value: Bool): Bool {
+		return cameraController.enabled = value;
+	}
+
+	function get_isControllerEnabled(): Bool {
+		return cameraController.enabled;
 	}
 }

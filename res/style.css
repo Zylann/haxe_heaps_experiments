@@ -1,0 +1,38 @@
+/*
+Note: make sure `allowInspect` is `true` in style setup so errors in this sheet will be reported.
+TODO Any way to see these errors in logs otherwise?
+*/
+
+pause-menu {
+    background: #000000;
+    /* TODO How do I make only the background transparent? alpha applies to everything inside the menu too */
+    /* alpha: 0.75; */
+    width: 100;
+    height: 50;
+    padding: 4;
+}
+
+text {
+    color: #ffffff;
+}
+
+.h1 {
+    /* TODO Needs to be bigger text, but there is no `font-size` support, needs more involved setup? */
+    align: middle middle;
+    margin: 4;
+}
+
+button {
+    background: #353535;
+    height: 24;
+    margin: 2;
+    fill-width: true;
+}
+
+button:hover {
+    background: #448f26;
+}
+
+button text {
+    align: middle middle;
+}

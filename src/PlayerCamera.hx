@@ -1,10 +1,10 @@
-import hxd.Key;
 import h3d.Vector;
 import h3d.scene.Scene;
 
 class PlayerCamera {
+	public var enabled(default, set): Bool = false;
+
 	var scene: Scene;
-	var enabled: Bool = false;
 	var yaw: Float = 0.0;
 	var pitch: Float = 0.0;
 	var yawDelta: Float = 0.0;
@@ -13,12 +13,11 @@ class PlayerCamera {
 
 	public function new(s3d: Scene) {
 		scene = s3d;
-		scene.addEventListener(onEvent);
 	}
 
-	function setEnabled(e: Bool) {
+	function set_enabled(e: Bool) {
 		if (e == enabled) {
-			return;
+			return e;
 		}
 		enabled = e;
 
@@ -32,9 +31,11 @@ class PlayerCamera {
 			var window = hxd.Window.getInstance();
 			window.mouseMode = Absolute;
 		}
+
+		return enabled;
 	}
 
-	public function isEnabled(): Bool {
+	function get_enabled(): Bool {
 		return enabled;
 	}
 
@@ -56,25 +57,5 @@ class PlayerCamera {
 	function onRelativeMouseEvent(event: hxd.Event) {
 		yawDelta += event.relX * sensitivity;
 		pitchDelta -= event.relY * sensitivity;
-	}
-
-	function onEvent(event: hxd.Event) {
-		if (enabled) {
-			switch (event.kind) {
-				case EKeyDown:
-					if (event.keyCode == Key.ESCAPE) {
-						setEnabled(false);
-					}
-
-				default:
-			}
-		} else {
-			switch (event.kind) {
-				case EPush:
-					setEnabled(true);
-
-				default:
-			}
-		}
 	}
 }

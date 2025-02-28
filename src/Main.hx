@@ -1,3 +1,4 @@
+import hxd.Window;
 import hxd.Key;
 import TerrainRenderer.MeshChunkTask;
 import h3d.scene.Mesh;
@@ -77,6 +78,12 @@ class Main extends hxd.App {
 
 		// UI
 
+		var window = Window.getInstance();
+		window.onClose = function() {
+			cleanup();
+			return true;
+		}
+
 		uiStyle = new h2d.domkit.Style();
 		uiStyle.load(hxd.Res.style);
 
@@ -85,7 +92,25 @@ class Main extends hxd.App {
 		onResize();
 
 		pauseMenu = new PauseMenu(uiCenter);
-		// pauseMenu.visible = false;
+		pauseMenu.continueButton.onClick = function() {
+			setPause(false);
+		};
+		pauseMenu.quitButton.onClick = function() {
+			// Usually programs simply have to get to the end of their "main" function to exit, after cleaning up.
+			// All I could find on samples and Discord questions is hxd.System.exit(),
+			// but that's a brutal exit, terminating the process.
+			//
+			// hxd.System.exit();
+			//
+			// Reading the code of the main loop, I figured closing the Window is closer to what I want.
+			// However, it seems we still have to execute cleanup ourselves.
+			// I wonder how Heaps cleans up its own things on exit?
+			//
+			// Anyways, for now I do this manually and set my own onClose handler.
+			if (window.onClose()) {
+				window.close();
+			}
+		};
 
 		uiStyle.addObject(pauseMenu);
 
@@ -115,13 +140,17 @@ class Main extends hxd.App {
 		DebugDisplay.setText("Pending tasks", '${taskRunner.getPendingTasksCount()}');
 	}
 
+	function setPause(paused: Bool): Void {
+		player.isControllerEnabled = !paused;
+		pauseMenu.visible = paused;
+	}
+
 	function onScene3DEvent(event: hxd.Event) {
 		if (player.isControllerEnabled) {
 			switch (event.kind) {
 				case EKeyDown:
 					if (event.keyCode == Key.ESCAPE) {
-						player.isControllerEnabled = false;
-						pauseMenu.visible = true;
+						setPause(true);
 					}
 
 				default:
@@ -130,8 +159,7 @@ class Main extends hxd.App {
 			switch (event.kind) {
 				case EKeyDown:
 					if (event.keyCode == Key.ESCAPE) {
-						pauseMenu.visible = false;
-						player.isControllerEnabled = true;
+						setPause(false);
 					}
 
 				case EPush:
@@ -144,11 +172,16 @@ class Main extends hxd.App {
 		}
 	}
 
-	// TODO Is it the right function to overload to handle shutdown?
-	override function dispose() {
+	function cleanup() {
+		// We want background tasks to finish, they might be important (saving?)
 		taskRunner.dispose();
-		super.dispose();
 	}
+
+	// TODO What is `dispose` for? It isn't called by anything
+	// override function dispose() {
+	// 	cleanup();
+	// 	super.dispose();
+	// }
 
 	static function main() {
 		new Main();

@@ -50,9 +50,7 @@ class Button extends h2d.Flow implements h2d.domkit.Object {
 		};
 	}
 
-	public dynamic function onClick() {
-		trace('Button ${text} clicked');
-	}
+	public dynamic function onClick() {}
 
 	function get_text() {
 		return label.text;

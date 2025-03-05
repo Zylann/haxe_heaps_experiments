@@ -3,7 +3,7 @@
 -lib hlsdl
 -lib domkit
 -hl hello.hl
-# -js hello.js
+--macro ui.InitComponents.init()
 -main Main
 # -debug
 

@@ -1,10 +1,13 @@
 import h3d.scene.Scene;
 import h3d.scene.Mesh;
-import Task.TaskContext;
 import Terrain.TerrainChunk;
 import haxe.ds.Vector;
 import haxe.Exception;
 import h3d.mat.Material;
+import util.Task;
+import util.MPSCList;
+import util.ThreadedTaskRunner;
+import util.Vector3i;
 
 class TerrainRenderer {
 	var chunks: Array<TerrainRendererChunk>;

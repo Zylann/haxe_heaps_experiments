@@ -1,3 +1,5 @@
+package util;
+
 // Base class for background tasks
 class Task {
 	public var priority: Int;

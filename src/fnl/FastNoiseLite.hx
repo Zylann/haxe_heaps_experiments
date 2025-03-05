@@ -46,6 +46,8 @@
 //
 // VERSION: 1.1.1
 // https://github.com/Auburn/FastNoiseLite
+package fnl;
+
 import haxe.ds.ReadOnlyArray;
 import haxe.Int32;
 

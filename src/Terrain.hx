@@ -1,6 +1,10 @@
-import Task.TaskContext;
 import haxe.Exception;
 import haxe.ds.Vector;
+import util.MPSCList;
+import util.Vector3i;
+import util.Box3i;
+import util.Task;
+import util.ThreadedTaskRunner;
 
 class Terrain {
 	public var sizeInChunks(default, null): Vector3i;
@@ -49,7 +53,7 @@ class Terrain {
 	}
 
 	public function loadAllChunks() {
-		var tasks = new Array<Task>();
+		var tasks = new Array<util.Task>();
 
 		for (cz in 0...sizeInChunks.z) {
 			for (cy in 0...sizeInChunks.y) {
@@ -148,7 +152,7 @@ class TerrainChunk {
 	}
 }
 
-class LoadChunkTask extends Task {
+class LoadChunkTask extends util.Task {
 	public var chunkX: Int;
 	public var chunkY: Int;
 	public var chunkZ: Int;

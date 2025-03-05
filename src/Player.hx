@@ -132,8 +132,8 @@ class Player {
 
 		cameraController.update();
 
-		DebugDisplay.setText("Position", '${position}');
-		DebugDisplay.setText("LookDir", '${camera.getForward()}');
+		util.DebugDisplay.setText("Position", '${position}');
+		util.DebugDisplay.setText("LookDir", '${camera.getForward()}');
 	}
 
 	function set_isControllerEnabled(value: Bool): Bool {

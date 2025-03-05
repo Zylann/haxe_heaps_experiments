@@ -3,13 +3,14 @@ import hxd.Window;
 import hxd.Key;
 import TerrainRenderer.MeshChunkTask;
 import h3d.scene.Mesh;
+import util.Vector3i;
 
 class Main extends hxd.App {
-	var debugDisplay: DebugDisplay;
+	var debugDisplay: util.DebugDisplay;
 	var player: Player;
 	var terrain: Terrain;
 	var terrainRenderer: TerrainRenderer;
-	var taskRunner: ThreadedTaskRunner;
+	var taskRunner: util.ThreadedTaskRunner;
 	var uiCenter: h2d.Flow;
 	var pauseMenu: PauseMenu;
 	var uiStyle: h2d.domkit.Style;
@@ -17,7 +18,7 @@ class Main extends hxd.App {
 	function new() {
 		var backgroundThreadCount = 4;
 
-		taskRunner = new ThreadedTaskRunner(backgroundThreadCount);
+		taskRunner = new util.ThreadedTaskRunner(backgroundThreadCount);
 
 		MeshChunkTask.initThreadLocals(backgroundThreadCount);
 
@@ -27,7 +28,7 @@ class Main extends hxd.App {
 	}
 
 	override function init() {
-		debugDisplay = new DebugDisplay(s2d);
+		debugDisplay = new util.DebugDisplay(s2d);
 
 		{
 			var prim = new h3d.prim.Cube();
@@ -138,7 +139,7 @@ class Main extends hxd.App {
 		uiStyle.sync(dt);
 
 		debugDisplay.update(dt);
-		DebugDisplay.setText("Pending tasks", '${taskRunner.getPendingTasksCount()}');
+		util.DebugDisplay.setText("Pending tasks", '${taskRunner.getPendingTasksCount()}');
 	}
 
 	function setPause(paused: Bool): Void {

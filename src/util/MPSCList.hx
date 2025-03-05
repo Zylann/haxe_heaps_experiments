@@ -1,3 +1,5 @@
+package util;
+
 import sys.thread.Mutex;
 
 // Basic specialization of a multi-producer single-consumer list.
@@ -32,7 +34,34 @@ class MPSCList<T> {
 		}
 	}
 
-	public function endConsume() {
+	public inline function endConsume() {
 		readerList.resize(0);
+	}
+
+	public inline function consume(): MPSCListConsumerIterator<T> {
+		beginConsume();
+		return new MPSCListConsumerIterator<T>(readerList);
+	}
+}
+
+class MPSCListConsumerIterator<T> {
+	var readerList: Array<T>;
+	var i: Int = 0;
+
+	public inline function new(a: Array<T>) {
+		readerList = a;
+	}
+
+	public inline function hasNext(): Bool {
+		return i < readerList.length;
+	}
+
+	public inline function next(): T {
+		var v = readerList[i];
+		i += 1;
+		if (!hasNext()) {
+			readerList.resize(0);
+		}
+		return v;
 	}
 }

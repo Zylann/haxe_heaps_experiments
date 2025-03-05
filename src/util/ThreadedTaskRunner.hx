@@ -1,8 +1,10 @@
+package util;
+
+import util.Task.TaskContext;
 import haxe.Exception;
 import sys.thread.Semaphore;
 import sys.thread.Mutex;
 import sys.thread.Thread;
-import Task.TaskContext;
 
 class TaskPriorityComparer {
 	public function new() {}

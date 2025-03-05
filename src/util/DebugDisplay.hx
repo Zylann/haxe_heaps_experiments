@@ -1,3 +1,5 @@
+package util;
+
 import haxe.Exception;
 import hl.Gc;
 import hxd.Timer;

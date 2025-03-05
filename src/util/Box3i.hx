@@ -1,3 +1,5 @@
+package util;
+
 #if debug
 import haxe.exceptions.ArgumentException;
 #end

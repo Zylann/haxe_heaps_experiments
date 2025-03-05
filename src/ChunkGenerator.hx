@@ -1,18 +1,20 @@
+import fnl.FastNoiseLite;
+
 class ChunkGenerator {
-	var noise1: FastNoiseLite.Noise;
-	var noise2: FastNoiseLite.Noise;
+	var noise1: Noise;
+	var noise2: Noise;
 
 	public function new() {
 		var seed = 131183;
 
-		noise1 = new FastNoiseLite.Noise(seed);
+		noise1 = new Noise(seed);
 		noise1.frequency = 1.0 / 200.0;
-		noise1.fractalType = FastNoiseLite.FractalType.FBm;
+		noise1.fractalType = FractalType.FBm;
 		noise1.octaves = 4;
 
-		noise2 = new FastNoiseLite.Noise(seed + 1);
+		noise2 = new Noise(seed + 1);
 		noise2.frequency = 1.0 / 50.0;
-		noise2.fractalType = FastNoiseLite.FractalType.FBm;
+		noise2.fractalType = FractalType.FBm;
 		noise2.octaves = 3;
 	}
 

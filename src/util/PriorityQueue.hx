@@ -1,3 +1,5 @@
+package util;
+
 typedef Comparer<T> = {
 	function compare(a: T, b: T): Bool;
 }

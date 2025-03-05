@@ -1,3 +1,4 @@
+import ui.PauseMenu;
 import hxd.Window;
 import hxd.Key;
 import TerrainRenderer.MeshChunkTask;

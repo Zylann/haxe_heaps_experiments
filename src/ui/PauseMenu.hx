@@ -1,3 +1,5 @@
+package ui;
+
 @:uiComp("pause-menu")
 class PauseMenu extends h2d.Flow implements h2d.domkit.Object {
 	static var SRC = <pause-menu layout="vertical">

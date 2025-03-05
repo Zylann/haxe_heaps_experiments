@@ -17,6 +17,10 @@ class Player {
 	var boxSizeZ: Float = 1.75;
 	var headZ: Float = 1.6;
 	var terrain: Terrain;
+	var gravityEnabled: Bool = true;
+	var gravity: Float = 50.0;
+	var jumpVelocity: Float = 12.0;
+	var grounded: Bool = false;
 
 	public function new(scene: Scene, terrain: Terrain) {
 		this.scene = scene;
@@ -56,25 +60,6 @@ class Player {
 			}
 		}
 
-		var camera = scene.camera;
-
-		var forwardFlat = camera.getForward();
-		forwardFlat.z = 0.0;
-		forwardFlat.normalize();
-
-		var rightFlat = camera.getRight();
-		rightFlat.z = 0.0;
-		rightFlat.normalize();
-
-		var up = new Vector(0, 0, 1);
-
-		var motorDir = forwardFlat * inputY + rightFlat * inputX + up * inputZ;
-		var targetVelocity = motorDir * speed;
-		var invInertia = 1.0 / Math.max(inertia, 0.00001);
-		velocity.lerp(velocity, targetVelocity, hxd.Math.clamp(deltaTime * invInertia, 0.0, 1.0));
-
-		var motion = velocity * deltaTime;
-
 		// TODO Optimize allocation
 		var aabb = new Bounds();
 		aabb.xMin = -boxSizeX * 0.5;
@@ -85,17 +70,65 @@ class Player {
 		aabb.zMax = boxSizeZ;
 		aabb.offset(position.x, position.y, position.z);
 
-		BoxPhysics.slideMotion(aabb, motion, terrain);
+		var camera = scene.camera;
 
-		position.load(position + motion);
+		if (terrain.isAreaLoaded(aabb)) {
+			var forwardFlat = camera.getForward();
+			forwardFlat.z = 0.0;
+			forwardFlat.normalize();
+
+			var rightFlat = camera.getRight();
+			rightFlat.z = 0.0;
+			rightFlat.normalize();
+
+			var up = new Vector(0, 0, 1);
+			var invInertia = 1.0 / Math.max(inertia, 0.00001);
+
+			if (gravityEnabled) {
+				var velocityZ = velocity.z;
+				velocityZ -= gravity * deltaTime;
+
+				if (grounded && inputZ > 0.0) {
+					// Jump
+					velocityZ = jumpVelocity;
+				}
+
+				var motorDir = forwardFlat * inputY + rightFlat * inputX;
+				var targetHorizontalVelocity = motorDir * speed;
+
+				velocity.lerp(velocity, targetHorizontalVelocity, hxd.Math.clamp(deltaTime * invInertia, 0.0, 1.0));
+				velocity.z = velocityZ;
+				//
+			} else {
+				// Fly mode
+
+				var motorDir = forwardFlat * inputY + rightFlat * inputX + up * inputZ;
+				var targetVelocity = motorDir * speed;
+
+				velocity.lerp(velocity, targetVelocity, hxd.Math.clamp(deltaTime * invInertia, 0.0, 1.0));
+			}
+
+			var motion = velocity * deltaTime;
+			var motionZBeforeCollision = motion.z;
+
+			BoxPhysics.slideMotion(aabb, motion, terrain);
+
+			if (motionZBeforeCollision < 0.0 && motion.z > motionZBeforeCollision) {
+				grounded = true;
+			} else if (Math.abs(motion.z) > 0.001) {
+				grounded = false;
+			}
+
+			position.load(position + motion);
+
+			if (deltaTime > 0.0) {
+				// Apply potential effects of collision to velocity
+				velocity.load(motion * (1.0 / deltaTime));
+			}
+		}
 
 		camera.pos.load(position);
 		camera.pos.z += headZ;
-
-		if (deltaTime > 0.0) {
-			// Apply potential effects of collision to velocity
-			velocity.load(motion * (1.0 / deltaTime));
-		}
 
 		cameraController.update();
 

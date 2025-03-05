@@ -37,12 +37,12 @@ class Terrain {
 		return chunks[index];
 	}
 
-	public function getVoxel(x: Int, y: Int, z: Int): Int {
+	public function getVoxel(x: Int, y: Int, z: Int, defaultValue: Int = 0): Int {
 		var pos = new Vector3i(x, y, z);
 		var cpos = pos >> Constants.CHUNK_SIZE_PO2;
 		var chunk = getChunk(cpos);
 		if (chunk == null) {
-			return 0;
+			return defaultValue;
 		}
 		var rpos = pos & Constants.CHUNK_SIZE_MASK;
 		return chunk.voxels.getVoxel(rpos.x, rpos.y, rpos.z);
@@ -72,6 +72,24 @@ class Terrain {
 		}
 
 		taskRunner.pushTasks(tasks);
+	}
+
+	public function isAreaLoaded(bounds: h3d.col.Bounds): Bool {
+		var box = Box3i.fromFloatBounds(bounds);
+		box.downscale(Constants.CHUNK_SIZE);
+		box.clip(new Box3i(0, 0, 0, sizeInChunks.x, sizeInChunks.y, sizeInChunks.z));
+
+		for (cz in box.minZ...box.maxZ) {
+			for (cy in box.minY...box.maxY) {
+				for (cx in box.minX...box.maxX) {
+					var chunk = getChunk(new Vector3i(cx, cy, cz));
+					if (chunk == null) {
+						return false;
+					}
+				}
+			}
+		}
+		return true;
 	}
 
 	public function update() {

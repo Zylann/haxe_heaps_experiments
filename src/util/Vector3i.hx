@@ -14,6 +14,12 @@ class Vector3iImpl {
 		this.z = z;
 	}
 
+	public inline function load(from: Vector3i): Void {
+		this.x = from.x;
+		this.y = from.y;
+		this.z = from.z;
+	}
+
 	public inline function distanceToSq(other: Vector3i): Int {
 		return cDistanceSq(x, y, z, other.x, other.y, other.z);
 	}
@@ -30,7 +36,11 @@ class Vector3iImpl {
 		return x + size.x * (y + size.y * z);
 	}
 
-	public function toString() {
+	public inline function clone(): Vector3i {
+		return new Vector3i(x, y, z);
+	}
+
+	public inline function toString() {
 		return '{${x},${y},${z}}';
 	}
 
@@ -85,6 +95,10 @@ abstract Vector3i(Vector3iImpl) {
 
 	public static inline function splat(v: Int): Vector3i {
 		return new Vector3i(v, v, v);
+	}
+
+	public static inline function fromFloor(v: Vector): Vector3i {
+		return new Vector3i(Std.int(Math.floor(v.x)), Std.int(Math.floor(v.y)), Std.int(Math.floor(v.z)));
 	}
 
 	@:op(a * b)

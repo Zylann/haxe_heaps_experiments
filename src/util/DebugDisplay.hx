@@ -8,6 +8,7 @@ import hxd.res.DefaultFont;
 class DebugDisplay {
 	static inline var FPS_UPDATE_INTERVAL = 0.25;
 	static inline var UPDATE_INTERVAL = 0.1;
+	static inline var LINGER_FRAMES = 5;
 
 	var textObject: h2d.Text;
 	var timeBeforeFPSUpdate = 0.0;
@@ -15,6 +16,7 @@ class DebugDisplay {
 	var displayedFPS = 0.0;
 	var labels: Array<String> = [];
 	var lines: Array<String> = [];
+	var lingers: Array<Int> = [];
 
 	static var singleton: DebugDisplay;
 
@@ -39,9 +41,9 @@ class DebugDisplay {
 		if (index == -1) {
 			index = label.length;
 			labels.push(label);
-			lines.push("");
 		}
 		lines[index] = line;
+		lingers[index] = LINGER_FRAMES;
 	}
 
 	public function update(dt: Float) {
@@ -55,6 +57,12 @@ class DebugDisplay {
 		if (timeBeforeUpdate <= 0.0) {
 			timeBeforeUpdate = UPDATE_INTERVAL;
 			updateText();
+		}
+
+		for (i in 0...lingers.length) {
+			if (lingers[i] > 0) {
+				lingers[i] -= 1;
+			}
 		}
 	}
 
@@ -88,6 +96,9 @@ class DebugDisplay {
 		sb.add("\n");
 
 		for (index in 0...labels.length) {
+			if (lingers[index] == 0) {
+				continue;
+			}
 			sb.add(labels[index]);
 			sb.add(": ");
 			sb.add(lines[index]);

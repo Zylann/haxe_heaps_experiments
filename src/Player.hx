@@ -1,3 +1,6 @@
+import util.Vector3i;
+import h3d.scene.Graphics;
+import util.DDA;
 import h3d.col.Bounds;
 import hxd.Key;
 import h3d.scene.Scene;
@@ -21,11 +24,13 @@ class Player {
 	var gravity: Float = 50.0;
 	var jumpVelocity: Float = 12.0;
 	var grounded: Bool = false;
+	var blockOutline: BlockOutline;
 
 	public function new(scene: Scene, terrain: Terrain) {
 		this.scene = scene;
 		this.terrain = terrain;
 		cameraController = new PlayerCamera(scene);
+		blockOutline = new BlockOutline(scene);
 	}
 
 	public function setPosition(x: Float, y: Float, z: Float): Void {
@@ -134,6 +139,29 @@ class Player {
 
 		util.DebugDisplay.setText("Position", '${position}');
 		util.DebugDisplay.setText("LookDir", '${camera.getForward()}');
+
+		updatePointer();
+	}
+
+	function updatePointer() {
+		var camera = scene.camera;
+
+		var rayState = new util.DDAState();
+		var hitVoxelID = 0;
+
+		var hasHit = util.DDA.voxelRaycast(camera.pos, camera.getForward(), (state: util.DDAState) -> {
+			var v = terrain.getVoxel(state.hitPosition.x, state.hitPosition.y, state.hitPosition.z);
+			return v != 0;
+		}, 10.0, rayState);
+
+		if (hasHit) {
+			hitVoxelID = terrain.getVoxel(rayState.hitPosition.x, rayState.hitPosition.y, rayState.hitPosition.z);
+			util.DebugDisplay.setText("Pointed voxel", '${rayState.hitPosition}');
+
+			blockOutline.setPosition(rayState.hitPosition);
+		}
+
+		blockOutline.setVoxel(hitVoxelID);
 	}
 
 	function set_isControllerEnabled(value: Bool): Bool {
@@ -142,5 +170,42 @@ class Player {
 
 	function get_isControllerEnabled(): Bool {
 		return cameraController.enabled;
+	}
+}
+
+class BlockOutline {
+	var graphics: h3d.scene.Graphics;
+	var voxelId: Int = 0;
+
+	public function new(scene: h3d.scene.Scene) {
+		graphics = new Graphics(scene);
+	}
+
+	public inline function setPosition(pos: Vector3i): Void {
+		graphics.x = pos.x;
+		graphics.y = pos.y;
+		graphics.z = pos.z;
+	}
+
+	public function setVoxel(newVoxelID: Int) {
+		if (voxelId == newVoxelID) {
+			return;
+		}
+
+		voxelId = newVoxelID;
+
+		if (voxelId == 0) {
+			graphics.visible = false;
+			return;
+		}
+
+		graphics.visible = true;
+
+		for (side in Cube.sideVertices) {
+			graphics.moveTo(side[0], side[1], side[2]);
+			graphics.lineTo(side[3], side[4], side[5]);
+			graphics.lineTo(side[6], side[7], side[8]);
+			graphics.lineTo(side[9], side[10], side[11]);
+		}
 	}
 }
